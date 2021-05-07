@@ -1,15 +1,22 @@
 import * as express from "express";
+import * as mongoose from "mongoose";
 
 class App {
   public app: express.Application;
   public port: number;
 
-  constructor(controllers, port) {
+  constructor(controllers) {
     this.app = express();
-    this.port = port;
 
+    this.connectToDatabase();
     this.initializeBodyParser();
     this.initializeControllers(controllers);
+  }
+
+  public listen() {
+    this.app.listen(process.env.POPT, () => {
+      console.log(`App listening on port ${process.env.PORT}`);
+    });
   }
 
   private initializeBodyParser() {
@@ -22,10 +29,15 @@ class App {
     });
   }
 
-  public listen() {
-    this.app.listen(this.port, () => {
-      console.log(`App listening on port ${this.port}`);
-    });
+  private connectToDatabase() {
+    mongoose.connect(
+      process.env.MONGO_URI,
+      {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      },
+      () => console.log(`DB :: ${mongoose.connection.name}`)
+    );
   }
 }
 
