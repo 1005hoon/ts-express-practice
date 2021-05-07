@@ -1,7 +1,6 @@
 import * as express from "express";
-
-// import mongoose for db connection
 import * as mongoose from "mongoose";
+import * as cookieParser from "cookie-parser";
 
 // import controllers
 import Controller from "./interfaces/controller.interface";
@@ -14,7 +13,7 @@ class App {
     this.app = express();
 
     this.connectToDatabase();
-    this.initializeBodyParser();
+    this.initializeMiddlewares();
     this.initializeControllers(controllers);
     this.initializeErrorHandlingMiddleware();
   }
@@ -25,8 +24,11 @@ class App {
     });
   }
 
-  private initializeBodyParser() {
+  private initializeMiddlewares() {
+    // body parser
     this.app.use(express.json());
+    // cookie parser => req.cookies 로 쿠키 접근 가능
+    this.app.use(cookieParser());
   }
 
   private initializeErrorHandlingMiddleware() {
