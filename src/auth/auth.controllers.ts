@@ -30,6 +30,7 @@ class AuthController implements Controller {
       validationMiddleware(LogInDto),
       this.login
     );
+    this.router.post(`${this.path}/logout`, this.logout);
   }
 
   private register = async (
@@ -79,6 +80,11 @@ class AuthController implements Controller {
     } else {
       next(new WrongCredentialsException());
     }
+  };
+
+  private logout = (req: express.Request, res: express.Response) => {
+    res.setHeader("Set-Cookie", ["Authorization=; max-age=0"]);
+    res.send(200);
   };
 
   private createToken = (user: User): TokenData => {
