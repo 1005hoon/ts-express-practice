@@ -1,23 +1,25 @@
 import * as bcrypt from "bcrypt";
 import * as express from "express";
 import * as jwt from "jsonwebtoken";
-import UserEmailExistingException from "exceptions/UserEmailExistingException";
-import Controller from "interfaces/controller.interface";
-import validationMiddleware from "middleware/validation.middleware";
-import CreateUserDto from "users/user.dto";
-import userModel from "users/user.model";
+import UserEmailExistingException from "../exceptions/UserEmailExistingException";
+import Controller from "../interfaces/controller.interface";
+import validationMiddleware from "../middleware/validation.middleware";
+import CreateUserDto from "../users/user.dto";
+import userModel from "../users/user.model";
 import LogInDto from "./login.dto";
-import WrongCredentialsException from "exceptions/WrongCredentialsException";
-import User from "users/user.interface";
-import TokenData from "interfaces/tokenData";
-import DataStoredInToken from "interfaces/dataStoredInToken";
+import WrongCredentialsException from "../exceptions/WrongCredentialsException";
+import User from "../users/user.interface";
+import TokenData from "../interfaces/tokenData";
+import DataStoredInToken from "../interfaces/dataStoredInToken";
 
 class AuthController implements Controller {
   public path = "/auth";
-  public router = express.router();
+  public router = express.Router();
   private user = userModel;
 
-  constructor() {}
+  constructor() {
+    this.initializeRoutes();
+  }
 
   private initializeRoutes() {
     this.router.post(
@@ -84,7 +86,7 @@ class AuthController implements Controller {
 
   private logout = (req: express.Request, res: express.Response) => {
     res.setHeader("Set-Cookie", ["Authorization=; max-age=0"]);
-    res.send(200);
+    res.sendStatus(200);
   };
 
   private createToken = (user: User): TokenData => {
