@@ -6,11 +6,12 @@ import CreatePostDto from "./post.dto";
 import Post from "./post.interface";
 import postModel from "./posts.model";
 import RequestWithUser from "../interfaces/requestWithUser.interface";
+import NotAuthorizedException from "../exceptions/NotAuthorizedException";
 
 class PostController {
   public path = "/posts";
   public router = express.Router();
-  private posts: Post[];
+  private post = postModel;
 
   constructor() {
     this.initializeRoutes();
@@ -19,6 +20,11 @@ class PostController {
   public initializeRoutes() {
     this.router.get(this.path, this.getAllPosts);
     this.router.get(`${this.path}/:id`, this.getPostById);
+    this.router.get(
+      `${this.path}/:userId/posts`,
+      authMiddleware,
+      this.getAllPostsByUser
+    );
     this.router
       .all(`${this.path}/*`, authMiddleware)
       .patch(
@@ -40,7 +46,9 @@ class PostController {
     res: express.Response,
     next: express.NextFunction
   ) => {
-    const posts: Post[] = await postModel.find();
+    const posts: Post[] = await this.post
+      .find()
+      .populate("author", "-password");
     res.send(posts);
   };
 
@@ -50,11 +58,25 @@ class PostController {
     next: express.NextFunction
   ) => {
     const { id } = req.params;
-    const post: Post = await postModel.findById(id);
+    const post: Post = await this.post.findById(id);
     if (post) {
       res.send(post);
     } else {
       next(new PostNotFoundException(id));
+    }
+  };
+
+  private getAllPostsByUser = async (
+    req: RequestWithUser,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    const userId = req.params.userId;
+    if (userId === req.user._id.toString()) {
+      const posts = await this.post.find({ author: userId });
+      res.send(posts);
+    } else {
+      next(new NotAuthorizedException());
     }
   };
 
@@ -63,13 +85,14 @@ class PostController {
     res: express.Response,
     next: express.NextFunction
   ) => {
-    const postData: Post = req.body;
-    const createdPost = new postModel({
+    const postData: CreatePostDto = req.body;
+    const createdPost = new this.post({
       ...postData,
-      authorId: req.user._id,
+      authorId: [req.user._id],
     });
-    await createdPost.save();
-    res.send(createdPost);
+    const savedPost = await createdPost.save();
+    await savedPost.populate("author", "name").execPopulate();
+    res.send(savedPost);
   };
 
   private modifyPost = async (
@@ -79,7 +102,7 @@ class PostController {
   ) => {
     const { id } = req.params;
     const postData: Post = req.body;
-    const updatedPost = await postModel.findByIdAndUpdate(id, postData, {
+    const updatedPost = await this.post.findByIdAndUpdate(id, postData, {
       new: true,
     });
     if (updatedPost) {
@@ -95,7 +118,7 @@ class PostController {
     next: express.NextFunction
   ) => {
     const { id } = req.params;
-    const removedPost = await postModel.findByIdAndDelete(id);
+    const removedPost = await this.post.findByIdAndDelete(id);
     if (removedPost) {
       res.send(204);
     } else {
