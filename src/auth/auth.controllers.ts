@@ -84,6 +84,8 @@ class AuthController implements Controller {
     }
   };
 
+  private getUsers = (req: express.Request, res: express.Response) => {};
+
   private logout = (req: express.Request, res: express.Response) => {
     res.setHeader("Set-Cookie", ["Authorization=; max-age=0"]);
     res.sendStatus(200);
