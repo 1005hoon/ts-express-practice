@@ -51,7 +51,6 @@ class AuthController implements Controller {
         ...userData,
         password: hashedPassword,
       });
-      user.password = undefined;
       // 토큰 생성
       const tokenData = this.createToken(user);
       res.setHeader("Set-Cookie", [this.createCookie(tokenData)]);
