@@ -5,6 +5,8 @@ import DataStoredInToken from "../interfaces/dataStoredInToken";
 import userModel from "../users/user.model";
 import WrongAuthenticationTokenException from "../exceptions/WrongAuthenticationTokenException";
 import AuthenticationTokenMissingException from "../exceptions/AuthenticationTokenMissingException";
+import { getRepository } from "typeorm";
+import { User } from "../users/user.entity";
 
 async function authMiddleware(
   req: RequestWithUser,
@@ -12,17 +14,16 @@ async function authMiddleware(
   next: NextFunction
 ) {
   const cookies = req.cookies;
-
+  const userRepository = getRepository(User);
   if (cookies && cookies.Authorization) {
     const secret = process.env.JWT_SECRET;
     try {
-      const verification = jwt.verify(
+      const verificationResponse = jwt.verify(
         cookies.Authorization,
         secret
       ) as DataStoredInToken;
-
-      const id = verification._id;
-      const user = await userModel.findById(id);
+      const id = verificationResponse.id;
+      const user = await userRepository.findOne(id);
 
       if (user) {
         req.user = user;
@@ -34,7 +35,7 @@ async function authMiddleware(
       next(new WrongAuthenticationTokenException());
     }
   } else {
-    next(new AuthenticationTokenMissingException());
+    next(new WrongAuthenticationTokenException());
   }
 }
 

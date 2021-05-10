@@ -1,3 +1,4 @@
+import { Exclude } from "class-transformer";
 import {
   Column,
   Entity,
@@ -32,3 +33,4 @@ export class User {
   @OneToMany(() => Post, (post: Post) => post.author)
   public posts: Post[];
 }
+1;

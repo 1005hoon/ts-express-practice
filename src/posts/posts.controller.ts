@@ -13,7 +13,6 @@ import { Post } from "./post.entity";
 class PostController {
   public path = "/posts";
   public router = express.Router();
-  private post = postModel;
   private postRepository = getRepository(Post);
 
   constructor() {
@@ -45,7 +44,9 @@ class PostController {
     res: express.Response,
     next: express.NextFunction
   ) => {
-    const posts = await this.postRepository.find({ relations: ["categories"] });
+    const posts = await this.postRepository.find({
+      relations: ["categories", "author"],
+    });
     res.send(posts);
   };
 
@@ -76,6 +77,7 @@ class PostController {
       author: req.user,
     });
     await this.postRepository.save(createdPost);
+    createdPost.author = undefined;
     res.send(createdPost);
   };
 
@@ -86,7 +88,7 @@ class PostController {
   ) => {
     const { id } = req.params;
     const postData: Post = req.body;
-    await this, this.postRepository.update(id, postData);
+    await this.postRepository.update(id, postData);
     const updatedPost = await this.postRepository.findOne(id);
     if (updatedPost) {
       res.send(updatedPost);
