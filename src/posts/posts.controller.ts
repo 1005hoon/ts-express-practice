@@ -8,7 +8,7 @@ import postModel from "./posts.model";
 import RequestWithUser from "../interfaces/requestWithUser.interface";
 import NotAuthorizedException from "../exceptions/NotAuthorizedException";
 import { getRepository } from "typeorm";
-import Post from "./post.entity";
+import { Post } from "./post.entity";
 
 class PostController {
   public path = "/posts";
@@ -45,7 +45,7 @@ class PostController {
     res: express.Response,
     next: express.NextFunction
   ) => {
-    const posts = await this.postRepository.find();
+    const posts = await this.postRepository.find({ relations: ["categories"] });
     res.send(posts);
   };
 
@@ -55,7 +55,9 @@ class PostController {
     next: express.NextFunction
   ) => {
     const { id } = req.params;
-    const post = await this.postRepository.findOne(id);
+    const post = await this.postRepository.findOne(id, {
+      relations: ["categories"],
+    });
     if (post) {
       res.send(post);
     } else {
@@ -69,7 +71,10 @@ class PostController {
     next: express.NextFunction
   ) => {
     const postData: CreatePostDto = req.body;
-    const createdPost = this.postRepository.create(postData);
+    const createdPost = this.postRepository.create({
+      ...postData,
+      author: req.user,
+    });
     await this.postRepository.save(createdPost);
     res.send(createdPost);
   };

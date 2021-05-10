@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     email: String,
     password: {
       type: String,
-      get: (): undefined => undefined,
+      // get: (): undefined => undefined,
     },
     address: addressSchema,
   },
