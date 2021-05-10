@@ -10,7 +10,7 @@ import LogInDto from "./login.dto";
 import WrongCredentialsException from "exceptions/WrongCredentialsException";
 
 class AuthService {
-  private userRepository = getRepository(User);
+  public userRepository = getRepository(User);
 
   public async register(userData: CreateUserDto) {
     if (await this.userRepository.findOne({ email: userData.email })) {
@@ -52,11 +52,11 @@ class AuthService {
     }
   }
 
-  private createCookie(tokenData: TokenData) {
+  public createCookie(tokenData: TokenData) {
     return `Authorization=${tokenData.token}; HttpOnly; Max-Ages=${tokenData.expiresIn}`;
   }
 
-  private generateToken(user: User) {
+  public generateToken(user: User) {
     const expiresIn = 60 * 60;
     const secret = process.env.JWT_SECRET;
     const dataStoredInToken: DataStoredInToken = {
