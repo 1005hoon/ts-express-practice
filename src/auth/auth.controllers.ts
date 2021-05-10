@@ -74,6 +74,8 @@ class AuthController implements Controller {
       if (isPasswordMatching) {
         user.password = undefined;
         const tokenData = this.createToken(user);
+        console.log(tokenData);
+
         res.setHeader("Set-Cookie", [this.createCookie(tokenData)]);
         res.send(user);
       } else {
@@ -83,8 +85,6 @@ class AuthController implements Controller {
       next(new WrongCredentialsException());
     }
   };
-
-  private getUsers = (req: express.Request, res: express.Response) => {};
 
   private logout = (req: express.Request, res: express.Response) => {
     res.setHeader("Set-Cookie", ["Authorization=; max-age=0"]);

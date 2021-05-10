@@ -88,8 +88,9 @@ class PostController {
     const postData: CreatePostDto = req.body;
     const createdPost = new this.post({
       ...postData,
-      authorId: [req.user._id],
+      author: req.user._id,
     });
+
     const savedPost = await createdPost.save();
     await savedPost.populate("author", "name").execPopulate();
     res.send(savedPost);
@@ -120,7 +121,7 @@ class PostController {
     const { id } = req.params;
     const removedPost = await this.post.findByIdAndDelete(id);
     if (removedPost) {
-      res.send(204);
+      res.sendStatus(204);
     } else {
       next(new PostNotFoundException(id));
     }
